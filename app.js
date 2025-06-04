@@ -1,305 +1,340 @@
-// Game data from the provided JSON
+// Game data with updated challenging vocabulary
 const gameData = {
-  gameWords: {
-    english: [
-      {"word": "PROSTATE", "hint": "Small gland below the bladder in men", "tip": "Men over 50 should get regular prostate screenings to detect issues early."},
-      {"word": "EXERCISE", "hint": "Physical activity for health", "tip": "Aim for 150 minutes of moderate exercise weekly for optimal health."},
-      {"word": "WELLNESS", "hint": "Overall state of health and well-being", "tip": "Mental health is just as important as physical health for overall wellness."},
-      {"word": "DIABETES", "hint": "Condition affecting blood sugar levels", "tip": "Regular check-ups help prevent and manage diabetes effectively."},
-      {"word": "STRENGTH", "hint": "Physical power and muscle capacity", "tip": "Strength training builds muscle mass and bone density as men age."}
-    ],
-    spanish: [
-      {"word": "BIENESTAR", "hint": "Estado de salud física y mental", "tip": "El bienestar incluye salud física, mental y social en equilibrio."},
-      {"word": "EJERCICIO", "hint": "Actividad física para la salud", "tip": "30 minutos de ejercicio diario mejoran significativamente la salud masculina."},
-      {"word": "GIMNASIO", "hint": "Lugar para hacer ejercicio", "tip": "El entrenamiento regular en gimnasio reduce el riesgo de enfermedades crónicas."},
-      {"word": "NUTRICION", "hint": "Alimentación saludable", "tip": "Una dieta balanceada es clave para mantener la salud masculina óptima."},
-      {"word": "COLESTEROL", "hint": "Sustancia en la sangre que afecta el corazón", "tip": "Los niveles altos de colesterol aumentan significativamente el riesgo cardíaco."}
-    ]
-  },
-  gameSettings: {
-    totalRounds: 10,
-    maxWrongGuesses: 7,
-    languages: ["english", "spanish"],
-    theme: "Men's Health June Wellness"
-  }
+  rounds: [
+    {
+      round: 1,
+      language: "English",
+      word: "PROSTATE",
+      hint: "A gland that produces fluid for semen and is important for male reproductive health",
+      tip: "Regular prostate screenings are recommended for men over 50, or earlier if there's family history of prostate cancer."
+    },
+    {
+      round: 2,
+      language: "Spanish", 
+      word: "BIENESTAR",
+      hint: "Estado de satisfacción física, mental y social completa",
+      tip: "El bienestar masculino incluye ejercicio regular, alimentación balanceada y chequeos médicos preventivos."
+    },
+    {
+      round: 3,
+      language: "English",
+      word: "AZOOSPERMIA", 
+      hint: "The absence of sperm in the semen, a male fertility condition",
+      tip: "Men experiencing fertility issues should consult a urologist for proper evaluation and treatment options."
+    },
+    {
+      round: 4,
+      language: "Spanish",
+      word: "HIPOGONADISMO",
+      hint: "Deficiencia en la producción de hormonas sexuales masculinas", 
+      tip: "Los niveles bajos de testosterona pueden afectar la energía, el estado de ánimo y la salud ósea."
+    },
+    {
+      round: 5,
+      language: "English",
+      word: "CRYPTORCHIDISM",
+      hint: "A condition where one or both testes fail to descend into the scrotum",
+      tip: "Early detection and treatment of undescended testes is important to prevent fertility complications."
+    },
+    {
+      round: 6,
+      language: "Spanish", 
+      word: "CRIPTORQUIDIA",
+      hint: "Condición donde los testículos no descienden al escroto durante el desarrollo",
+      tip: "Esta condición debe tratarse antes de los 2 años para prevenir problemas de fertilidad futuros."
+    },
+    {
+      round: 7,
+      language: "English",
+      word: "HYPOGONADISM",
+      hint: "A condition where the body produces insufficient sex hormones", 
+      tip: "Symptoms include fatigue, decreased muscle mass, and mood changes - treatable with medical supervision."
+    },
+    {
+      round: 8,
+      language: "Spanish",
+      word: "ESPERMATOGENESIS", 
+      hint: "El proceso de formación y desarrollo de los espermatozoides",
+      tip: "Este proceso puede verse afectado por el estrés, la mala alimentación y el sedentarismo."
+    },
+    {
+      round: 9,
+      language: "English",
+      word: "STRENGTH",
+      hint: "Physical power and endurance, crucial for healthy aging in men",
+      tip: "Strength training helps maintain muscle mass and bone density as men age, reducing injury risk."
+    },
+    {
+      round: 10,
+      language: "Spanish",
+      word: "COLESTEROL", 
+      hint: "Sustancia grasa que en exceso puede causar problemas cardiovasculares",
+      tip: "Mantener niveles saludables de colesterol previene enfermedades cardíacas, la principal causa de muerte en hombres."
+    }
+  ]
 };
 
 // Game state
-let currentRound = 1;
+let currentRound = 0;
 let score = 0;
-let currentWord = "";
-let currentHint = "";
-let currentTip = "";
-let currentLanguage = "";
+let wrongGuesses = 0;
 let guessedLetters = [];
-let wrongGuesses = [];
-let gameResults = [];
+let currentWord = '';
+let revealedLetters = [];
+let roundResults = [];
 
 // DOM elements
-const currentRoundEl = document.getElementById('currentRound');
-const scoreEl = document.getElementById('score');
-const currentLanguageEl = document.getElementById('currentLanguage');
-const hintTextEl = document.getElementById('hintText');
-const wordDisplayEl = document.getElementById('wordDisplay');
-const wrongLettersEl = document.getElementById('wrongLetters');
-const keyboardEl = document.getElementById('keyboard');
-const gameMessageEl = document.getElementById('gameMessage');
-const messageTitleEl = document.getElementById('messageTitle');
-const messageTextEl = document.getElementById('messageText');
-const tipTextEl = document.getElementById('tipText');
-const nextButtonEl = document.getElementById('nextButton');
-const finalScoreEl = document.getElementById('finalScore');
-const finalScoreValueEl = document.getElementById('finalScoreValue');
-const scoreBreakdownEl = document.getElementById('scoreBreakdown');
+const welcomeScreen = document.getElementById('welcome-screen');
+const gameScreen = document.getElementById('game-screen');
+const roundCompleteScreen = document.getElementById('round-complete-screen');
+const gameOverScreen = document.getElementById('game-over-screen');
 
-// Initialize game
-function initGame() {
-  createKeyboard();
-  startRound();
-}
+// Game elements
+const roundTitle = document.getElementById('round-title');
+const scoreDisplay = document.getElementById('score-display');
+const roundProgress = document.getElementById('round-progress');
+const wordHint = document.getElementById('word-hint');
+const wordDisplay = document.getElementById('word-display');
+const lettersGrid = document.getElementById('letters-grid');
+const wrongCount = document.getElementById('wrong-count');
+const hangmanParts = document.querySelectorAll('.hangman-part');
 
-// Create virtual keyboard
-function createKeyboard() {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  keyboardEl.innerHTML = '';
+// Round complete elements
+const roundResult = document.getElementById('round-result');
+const completedWord = document.getElementById('completed-word');
+const healthTipText = document.getElementById('health-tip-text');
+const nextRoundBtn = document.getElementById('next-round-btn');
+
+// Game over elements
+const finalScore = document.getElementById('final-score');
+const roundsSummary = document.getElementById('rounds-summary');
+
+// Start the game
+function startGame() {
+  currentRound = 0;
+  score = 0;
+  roundResults = [];
   
-  letters.forEach(letter => {
-    const button = document.createElement('button');
-    button.className = 'key';
-    button.textContent = letter;
-    button.onclick = () => guessLetter(letter);
-    button.id = `key-${letter}`;
-    keyboardEl.appendChild(button);
-  });
+  welcomeScreen.classList.add('hidden');
+  gameScreen.classList.remove('hidden');
+  gameScreen.classList.add('screen-transition');
+  
+  startRound();
 }
 
 // Start a new round
 function startRound() {
-  // Reset round state
+  const round = gameData.rounds[currentRound];
+  currentWord = round.word;
+  wrongGuesses = 0;
   guessedLetters = [];
-  wrongGuesses = [];
-  
-  // Determine language (alternating: odd rounds = English, even rounds = Spanish)
-  currentLanguage = currentRound % 2 === 1 ? 'english' : 'spanish';
-  
-  // Get word for current round
-  const wordIndex = Math.floor((currentRound - 1) / 2);
-  const wordData = gameData.gameWords[currentLanguage][wordIndex];
-  currentWord = wordData.word;
-  currentHint = wordData.hint;
-  currentTip = wordData.tip;
+  revealedLetters = new Array(currentWord.length).fill(false);
   
   // Update UI
-  updateRoundInfo();
-  updateWordDisplay();
-  updateWrongLetters();
-  resetKeyboard();
-  resetHangman();
-}
-
-// Update round information
-function updateRoundInfo() {
-  currentRoundEl.textContent = currentRound;
-  scoreEl.textContent = score;
-  currentLanguageEl.textContent = currentLanguage === 'english' ? 'English' : 'Español';
-  hintTextEl.textContent = currentHint;
-}
-
-// Update word display with blanks and revealed letters
-function updateWordDisplay() {
-  wordDisplayEl.innerHTML = '';
+  roundTitle.textContent = `Round ${round.round} - ${round.language}`;
+  scoreDisplay.textContent = `Score: ${score}/${currentRound}`;
+  roundProgress.textContent = `${round.round}/10`;
+  wordHint.textContent = round.hint;
+  wrongCount.textContent = '0';
   
-  for (let letter of currentWord) {
+  // Reset hangman drawing
+  hangmanParts.forEach(part => part.classList.remove('visible'));
+  
+  // Create word display
+  createWordDisplay();
+  
+  // Create letters grid
+  createLettersGrid(round.language);
+}
+
+// Create word display with blanks
+function createWordDisplay() {
+  wordDisplay.innerHTML = '';
+  
+  for (let i = 0; i < currentWord.length; i++) {
     const letterSlot = document.createElement('div');
     letterSlot.className = 'letter-slot';
+    letterSlot.id = `letter-${i}`;
     
-    if (guessedLetters.includes(letter)) {
-      letterSlot.textContent = letter;
-      letterSlot.classList.add('revealed');
+    if (currentWord[i] === ' ') {
+      letterSlot.style.border = 'none';
+      letterSlot.style.width = '20px';
     }
     
-    wordDisplayEl.appendChild(letterSlot);
+    wordDisplay.appendChild(letterSlot);
   }
 }
 
-// Update wrong letters display
-function updateWrongLetters() {
-  wrongLettersEl.textContent = wrongGuesses.join(' ');
-  if (wrongGuesses.length > 0) {
-    document.querySelector('.wrong-letters').classList.add('shake');
-    setTimeout(() => {
-      document.querySelector('.wrong-letters').classList.remove('shake');
-    }, 500);
+// Create letters grid based on language
+function createLettersGrid(language) {
+  lettersGrid.innerHTML = '';
+  
+  let letters;
+  if (language === 'Spanish') {
+    letters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+  } else {
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   }
-}
-
-// Reset keyboard state
-function resetKeyboard() {
-  const keys = document.querySelectorAll('.key');
-  keys.forEach(key => {
-    key.disabled = false;
-    key.className = 'key';
-  });
-}
-
-// Reset hangman drawing
-function resetHangman() {
-  const hangmanParts = document.querySelectorAll('.hangman-part');
-  hangmanParts.forEach((part, index) => {
-    if (index === 0) return; // Keep gallows visible
-    part.classList.remove('visible');
+  
+  letters.forEach(letter => {
+    const letterBtn = document.createElement('button');
+    letterBtn.className = 'letter-btn';
+    letterBtn.textContent = letter;
+    letterBtn.onclick = () => guessLetter(letter);
+    lettersGrid.appendChild(letterBtn);
   });
 }
 
 // Handle letter guess
 function guessLetter(letter) {
-  // Disable the key
-  const keyEl = document.getElementById(`key-${letter}`);
-  keyEl.disabled = true;
+  if (guessedLetters.includes(letter)) return;
+  
+  guessedLetters.push(letter);
+  const letterBtn = event.target;
+  letterBtn.disabled = true;
   
   if (currentWord.includes(letter)) {
     // Correct guess
-    guessedLetters.push(letter);
-    keyEl.classList.add('correct');
-    updateWordDisplay();
+    letterBtn.classList.add('correct');
+    
+    // Reveal letters
+    for (let i = 0; i < currentWord.length; i++) {
+      if (currentWord[i] === letter) {
+        revealedLetters[i] = true;
+        const letterSlot = document.getElementById(`letter-${i}`);
+        letterSlot.textContent = letter;
+        letterSlot.classList.add('revealed');
+      }
+    }
     
     // Check if word is complete
-    if (isWordComplete()) {
-      setTimeout(() => endRound(true), 500);
+    if (revealedLetters.every((revealed, index) => revealed || currentWord[index] === ' ')) {
+      roundComplete(true);
     }
   } else {
     // Wrong guess
-    wrongGuesses.push(letter);
-    keyEl.classList.add('wrong');
-    updateWrongLetters();
-    updateHangman();
+    letterBtn.classList.add('incorrect');
+    wrongGuesses++;
+    wrongCount.textContent = wrongGuesses;
     
-    // Check if game is lost
-    if (wrongGuesses.length >= gameData.gameSettings.maxWrongGuesses) {
-      setTimeout(() => endRound(false), 500);
+    // Show hangman part
+    if (wrongGuesses <= hangmanParts.length) {
+      hangmanParts[wrongGuesses - 1].classList.add('visible');
+    }
+    
+    // Check if game over
+    if (wrongGuesses >= 6) {
+      roundComplete(false);
     }
   }
 }
 
-// Check if word is completely guessed
-function isWordComplete() {
-  return currentWord.split('').every(letter => guessedLetters.includes(letter));
-}
-
-// Update hangman drawing
-function updateHangman() {
-  const partIndex = wrongGuesses.length;
-  if (partIndex <= gameData.gameSettings.maxWrongGuesses) {
-    const part = document.querySelector(`.hangman-part[data-part="${partIndex}"]`);
-    if (part) {
-      part.classList.add('visible');
-    }
-  }
-}
-
-// End current round
-function endRound(won) {
-  // Record result
-  gameResults.push({
-    round: currentRound,
-    word: currentWord,
-    language: currentLanguage,
-    won: won
-  });
+// Handle round completion
+function roundComplete(success) {
+  const round = gameData.rounds[currentRound];
   
-  if (won) {
+  if (success) {
     score++;
-    messageTitleEl.textContent = currentLanguage === 'english' ? 'Excellent!' : '¡Excelente!';
-    messageTextEl.textContent = currentLanguage === 'english' ? 
-      `You guessed "${currentWord}" correctly!` : 
-      `¡Adivinaste "${currentWord}" correctamente!`;
+    roundResult.textContent = 'Round Complete! 🎉';
+    roundResult.style.color = 'var(--color-success)';
   } else {
-    messageTitleEl.textContent = currentLanguage === 'english' ? 'Game Over' : 'Juego Terminado';
-    messageTextEl.textContent = currentLanguage === 'english' ? 
-      `The word was "${currentWord}"` : 
-      `La palabra era "${currentWord}"`;
-  }
-  
-  // Show health tip
-  tipTextEl.textContent = currentTip;
-  
-  // Show message
-  gameMessageEl.classList.add('show');
-  
-  // Update next button text
-  if (currentRound >= gameData.gameSettings.totalRounds) {
-    nextButtonEl.textContent = currentLanguage === 'english' ? 'View Final Score' : 'Ver Puntuación Final';
-  } else {
-    nextButtonEl.textContent = currentLanguage === 'english' ? 'Next Round' : 'Siguiente Ronda';
-  }
-}
-
-// Proceed to next round
-function nextRound() {
-  gameMessageEl.classList.remove('show');
-  
-  if (currentRound >= gameData.gameSettings.totalRounds) {
-    showFinalScore();
-  } else {
-    currentRound++;
-    startRound();
-  }
-}
-
-// Show final score screen
-function showFinalScore() {
-  finalScoreValueEl.textContent = score;
-  
-  // Create score breakdown
-  scoreBreakdownEl.innerHTML = '<h3>Round Results:</h3>';
-  
-  gameResults.forEach(result => {
-    const resultDiv = document.createElement('div');
-    resultDiv.className = 'round-result';
+    roundResult.textContent = 'Round Failed 😞';
+    roundResult.style.color = 'var(--color-error)';
     
-    resultDiv.innerHTML = `
-      <span class="round-number">Round ${result.round}</span>
-      <span class="round-word">${result.word}</span>
-      <span class="round-status ${result.won ? 'win' : 'lose'}">${result.won ? 'WIN' : 'LOSE'}</span>
-    `;
-    
-    scoreBreakdownEl.appendChild(resultDiv);
+    // Reveal the word
+    for (let i = 0; i < currentWord.length; i++) {
+      if (currentWord[i] !== ' ') {
+        const letterSlot = document.getElementById(`letter-${i}`);
+        letterSlot.textContent = currentWord[i];
+        letterSlot.style.color = 'var(--color-error)';
+      }
+    }
+  }
+  
+  // Store round result
+  roundResults.push({
+    round: round.round,
+    word: round.word,
+    language: round.language,
+    success: success
   });
   
-  finalScoreEl.classList.add('show');
+  completedWord.textContent = `"${round.word}"`;
+  healthTipText.textContent = round.tip;
+  
+  // Update next round button
+  if (currentRound === gameData.rounds.length - 1) {
+    nextRoundBtn.textContent = 'View Results';
+    nextRoundBtn.onclick = showGameOver;
+  } else {
+    nextRoundBtn.textContent = 'Next Round';
+    nextRoundBtn.onclick = nextRound;
+  }
+  
+  // Show round complete screen
+  setTimeout(() => {
+    gameScreen.classList.add('hidden');
+    roundCompleteScreen.classList.remove('hidden');
+    roundCompleteScreen.classList.add('screen-transition');
+  }, 1000);
 }
 
-// Restart game
-function restartGame() {
-  // Reset game state
-  currentRound = 1;
-  score = 0;
-  gameResults = [];
+// Move to next round
+function nextRound() {
+  currentRound++;
   
-  // Hide final score screen
-  finalScoreEl.classList.remove('show');
+  roundCompleteScreen.classList.add('hidden');
+  gameScreen.classList.remove('hidden');
+  gameScreen.classList.add('screen-transition');
   
-  // Start new game
   startRound();
 }
 
-// Initialize game when page loads
-document.addEventListener('DOMContentLoaded', initGame);
+// Show game over screen
+function showGameOver() {
+  const percentage = Math.round((score / gameData.rounds.length) * 100);
+  finalScore.textContent = `Final Score: ${score}/${gameData.rounds.length} (${percentage}%)`;
+  
+  // Create rounds summary
+  roundsSummary.innerHTML = '';
+  roundResults.forEach(result => {
+    const item = document.createElement('div');
+    item.className = `round-summary-item ${result.success ? 'success' : 'failure'}`;
+    
+    item.innerHTML = `
+      <span class="round-info">Round ${result.round} (${result.language}): ${result.word}</span>
+      <span class="result">${result.success ? '✓' : '✗'}</span>
+    `;
+    
+    roundsSummary.appendChild(item);
+  });
+  
+  roundCompleteScreen.classList.add('hidden');
+  gameOverScreen.classList.remove('hidden');
+  gameOverScreen.classList.add('screen-transition');
+}
 
-// Keyboard support
-document.addEventListener('keydown', (event) => {
-  const letter = event.key.toUpperCase();
-  if (letter >= 'A' && letter <= 'Z') {
-    const keyEl = document.getElementById(`key-${letter}`);
-    if (keyEl && !keyEl.disabled) {
-      guessLetter(letter);
-    }
-  }
-});
+// Restart the game
+function restartGame() {
+  // Reset all screens
+  gameOverScreen.classList.add('hidden');
+  roundCompleteScreen.classList.add('hidden');
+  gameScreen.classList.add('hidden');
+  welcomeScreen.classList.remove('hidden');
+  welcomeScreen.classList.add('screen-transition');
+  
+  // Reset game state
+  currentRound = 0;
+  score = 0;
+  wrongGuesses = 0;
+  guessedLetters = [];
+  currentWord = '';
+  revealedLetters = [];
+  roundResults = [];
+}
 
-// Prevent default behavior for space and enter keys to avoid page scrolling
-document.addEventListener('keydown', (event) => {
-  if (event.code === 'Space' || event.code === 'Enter') {
-    event.preventDefault();
-  }
+// Initialize the game
+document.addEventListener('DOMContentLoaded', function() {
+  // Add event listeners and initialize any necessary elements
+  console.log('Men\'s Health Hangman game loaded successfully!');
 });
